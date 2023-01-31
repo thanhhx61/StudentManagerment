@@ -1,0 +1,167 @@
+﻿@model Student
+
+@{
+    ViewData["Title"] = "List Student";
+    var skills = "";
+
+}
+<div class="card">
+    <div class="row">   
+        <div class="col-12">
+            <div class="row">
+                <form asp-controller="Student" asp-action="Index" method="get">
+                    <div style="display:flex; ">
+                        <div>
+                            <input style="padding: 1.25em 2.75em 1.25em 1.25em" class="red_  space-left space-right pg-2px" asp-for="StudentName" placeholder="Search Name..." type="text">
+                            <span class="dash space-event-right"></span>
+                        </div>
+
+                        <div>
+                            <select style="padding: 1.25em 2.75em 1.25em 1.25em" class="red_ space-right pd" asp-for="SchoolYearId" asp-items="@ViewBag.SchoolYearId">
+                                <option value="">学年</option>
+                            </select>
+                            <span class="dash space-event-right"></span>
+                        </div>
+
+                        <div>
+                            <select style="padding: 1.25em 2.75em 1.25em 1.25em" class="red_ space-right pd" asp-for="EventId" asp-items="@ViewBag.ListEventId">
+                                <option value="">イベント</option>
+                            </select>
+                            <span class="dash space-event-right"></span>
+                        </div>
+
+
+                        @*Search Skill*@
+                        <div class="combo js-multiselect ">
+                            <div style="padding: 1.25em 2.75em 1.25em 1.25em">
+                                <span id="combo3-remove" style="display: none">remove</span>
+                                <input 
+                                       placeholder="#Skill..."
+                                       aria-labelledby="combo3-label combo3-selected"
+                                       class="combo-input"
+                                       role="combobox"
+                                       type="text"
+                                       id="combo3" 
+                                />
+                                <div class="combo-menu" role="listbox" id="listbox3"></div>
+                            </div>
+                        </div>
+                        @*End Search Skill*@
+
+
+                        <div>
+                            <button style="padding: 1.25em 2.75em 1.25em 1.25em" class="sizeIconSearch">
+                                <i class="bi bi-search" style="vertical-align: -1.125em;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="height: 50px">                        
+                        <ul class="selected-options" id="combo3-selected"></ul>
+                    </div><br />
+
+                </form>
+            </div>
+        </div>
+    </div>
+    <hr />
+    <div class="card-body">
+        <table class="table table-bordered" id="mytbEvent">
+            <thead class="thead-dark" style="background-color: #3e55df; color: white">
+                <tr>
+                    <th class="center">
+                        学生コード
+                    </th>
+                    <th class="center">
+                        学生の名前
+                    </th>
+                    <th class="center">
+                        学年
+                    </th>
+                    <th class="center">
+                        イベント
+                    </th>
+                    <th class="center">
+                        ハッシュタグ
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Users)
+                {
+                    <tr class="dbclick" id="@item.Id">
+                        <td class="center">
+                            <p>@Html.DisplayFor(modelItem => item.StudentCode)</p>
+                        </td>
+                        <td class="center" style="font-weight:600">
+                            <p>@Html.DisplayFor(modelItem => item.UserName)</p>
+                        </td>
+                        <td class="center">
+                            <p>
+                                @Html.DisplayFor(modelItem => item.UserSchoolYears.OrderByDescending(u => u.SchoolYearId).FirstOrDefault(m => m.UserId == item.Id).SchoolYear.SchoolYearName)
+                            </p>
+                        </td>
+                        <td>
+                            @if (item.Events.Count != 0)
+                            {
+                                var evtName = string.Empty;
+
+                                @foreach (var evt in item.Events)
+                                {
+                                    if (!evtName.Contains(evt.ListEvent.ListEventName))
+                                    {
+                                        evtName += " " + evt.ListEvent.ListEventName;
+                                    }
+
+                                }
+
+                                var listEvt = evtName.Split(" ").Skip(1);
+                                <strong>@string.Join(", ", listEvt)</strong>
+                            }
+                        </td>
+                        <td>
+                            @if (ViewBag.listSkills != null)
+                            {
+                                @foreach (var m in ViewBag.listSkills)
+                                {
+                                    if (m.UserId == item.Id)
+                                    {
+                                        <span style="color:@m.Style">#@m.SkillName</span>
+                                    }
+                                }
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $('.dbclick').dblclick(function () {
+            var stuId = $(this).attr('id');
+            window.location.replace(`/Events/Index/${stuId}`);
+            return false;
+        });
+        //datatb
+        $("#mytbEvent").DataTable({
+            "searching": false,
+            "ordering": false,
+            "bLengthChange": false,
+            "bInfo": false,
+            "language": {
+                "paginate": {
+                    "next": "»",
+                    "previous": "«"
+                }
+            },
+            "oLanguage": {
+                "sEmptyTable": "テーブルにデータがありません"
+            }
+        });
+        $(document).ready(function () {
+            $('#mytbEvent').DataTable();
+        });
+    </script>
+}
